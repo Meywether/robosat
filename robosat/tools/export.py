@@ -27,9 +27,12 @@ def main(args):
     num_classes = len(dataset["common"]["classes"])
     net = UNet(num_classes)
 
-    chkpt = torch.load(args.checkpoint, map_location="cpu")
-    net.load_state_dict(chkpt)
+    def map_location(storage, _):
+        return storage.cpu()
+
+    chkpt = torch.load(args.checkpoint, map_location=map_location)
     net = torch.nn.DataParallel(net)
+    net.load_state_dict(chkpt)
 
     # Todo: make input channels configurable, not hard-coded to three channels for RGB
     batch = torch.autograd.Variable(torch.randn(1, 3, args.image_size, args.image_size))
